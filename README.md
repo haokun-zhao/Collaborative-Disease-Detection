@@ -11,7 +11,7 @@ pip install -r requirements.txt
 
 ## Run the code
 ```sh
-cd cdd
+cd CDD
 python main.py
 ```
 
