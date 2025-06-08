@@ -110,14 +110,13 @@ if __name__ == '__main__':
         ndcg_loger.append(ret['ndcg'])
         hit_loger.append(ret['hit_ratio'])
         auc_loger.append(ret['auc'])
-        acc_loger.append(ret['accuracy'])
 
         if args.verbose > 0:
             perf_str = 'Epoch %d [%.1fs + %.1fs]: training loss=[%.5f=%.5f + %.5f], recall=[%.5f, %.5f], ' \
-                       'precision=[%.5f, %.5f], hit=[%.5f, %.5f], ndcg=[%.5f, %.5f], auc=[%.5f], accuracy=[%.5f, %.5f]' % \
+                       'precision=[%.5f, %.5f], hit=[%.5f, %.5f], ndcg=[%.5f, %.5f], auc=[%.5f]' % \
                        (epoch+1, t2 - t1, t3 - t2, loss, mf_loss, emb_loss, ret['recall'][0], ret['recall'][-1],
                         ret['precision'][0], ret['precision'][-1], ret['hit_ratio'][0], ret['hit_ratio'][-1],
-                        ret['ndcg'][0], ret['ndcg'][-1], ret['auc'], ret['accuracy'][0], ret['accuracy'][-1])
+                        ret['ndcg'][0], ret['ndcg'][-1], ret['auc'])
             print(perf_str)
 
         cur_best_pre_0, stopping_step, should_stop = early_stopping(ret['recall'][0], cur_best_pre_0,
@@ -138,18 +137,16 @@ if __name__ == '__main__':
     pres = np.array(pre_loger)
     ndcgs = np.array(ndcg_loger)
     hit = np.array(hit_loger)
-    acc = np.array(acc_loger)
     auc = np.array(auc_loger)
 
     best_rec_0 = max(recs[:, 0])
     idx = list(recs[:, 0]).index(best_rec_0)
 
-    final_perf = "Best Iter=[%d]@[%.1f]\trecall=[%s], precision=[%s], hit=[%s], ndcg=[%s], accuracy=[%s], auc=[%s]" % \
+    final_perf = "Best Iter=[%d]@[%.1f]\trecall=[%s], precision=[%s], hit=[%s], ndcg=[%s], auc=[%s]" % \
                  (idx, time() - t0, '\t'.join(['%.5f' % r for r in recs[idx]]),
                   '\t'.join(['%.5f' % r for r in pres[idx]]),
                   '\t'.join(['%.5f' % r for r in hit[idx]]),
                   '\t'.join(['%.5f' % r for r in ndcgs[idx]]),
-                  '\t'.join(['%.5f' % r for r in acc[idx]]),
                   '\t'.join(['%.5f' % r for r in auc[idx]]))
     print(final_perf)
 
