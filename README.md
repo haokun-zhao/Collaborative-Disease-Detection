@@ -15,6 +15,7 @@ cd cdd
 python main.py
 ```
 
+## Figures and Results
 Fig. 1 illustrutes the core concepts of high-order connectivity:
 <img src="./Figure/high order connectivity.png" width="100%"></img>
 
