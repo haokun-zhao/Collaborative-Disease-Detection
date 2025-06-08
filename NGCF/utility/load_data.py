@@ -15,8 +15,8 @@ class Data(object):
         self.path = path
         self.batch_size = batch_size
 
-        train_file = path + '/train.txt'
-        test_file = path + '/test.txt'
+        train_file = path + '/train2.txt'
+        test_file = path + '/test2.txt'
 
         #get number of users and items
         self.n_users, self.n_items = 0, 0
@@ -28,8 +28,8 @@ class Data(object):
         with open(train_file) as f:
             for l in f.readlines():
                 if len(l) > 0:
-                    l = l.strip('\n').split(' ')
-                    items = [int(i) for i in l[1:]]
+                    l = l.strip().split()
+                    items = [int(float(i)) for i in l[1:]]
                     uid = int(l[0])
                     self.exist_users.append(uid)
                     self.n_items = max(self.n_items, max(items))
@@ -39,11 +39,8 @@ class Data(object):
         with open(test_file) as f:
             for l in f.readlines():
                 if len(l) > 0:
-                    l = l.strip('\n')
-                    try:
-                        items = [int(i) for i in l.split(' ')[1:]]
-                    except Exception:
-                        continue
+                    l = l.strip().split()
+                    items = [int(float(i)) for i in l[1:]]
                     self.n_items = max(self.n_items, max(items))
                     self.n_test += len(items)
         self.n_items += 1
@@ -59,8 +56,8 @@ class Data(object):
                 for l in f_train.readlines():
                     if len(l) == 0:
                         break
-                    l = l.strip('\n')
-                    items = [int(i) for i in l.split(' ')]
+                    l = l.strip()
+                    items = [int(float(i)) for i in l.split()]
                     uid, train_items = items[0], items[1:]
 
                     for i in train_items:
@@ -83,9 +80,9 @@ class Data(object):
     def get_adj_mat(self):
         try:
             t1 = time()
-            adj_mat = sp.load_npz(self.path + '/s_adj_mat.npz')
-            norm_adj_mat = sp.load_npz(self.path + '/s_norm_adj_mat.npz')
-            mean_adj_mat = sp.load_npz(self.path + '/s_mean_adj_mat.npz')
+            adj_mat = sp.load_npz(self.path + '/s_adj_mat2.npz')
+            norm_adj_mat = sp.load_npz(self.path + '/s_norm_adj_mat2.npz')
+            mean_adj_mat = sp.load_npz(self.path + '/s_mean_adj_mat2.npz')
             print('already load adj matrix', adj_mat.shape, time() - t1)
 
         except Exception:
