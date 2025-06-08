@@ -24,7 +24,7 @@ class CDD(nn.Module):
         self.norm_adj = norm_adj
         # self.shortest_path_file = shortest_path_file
 
-        self.layers = eval(args.layer_size) # [64,64,64,64,64,64]
+        self.layers = eval(args.layer_size) # [64,64,64]
         self.decay = eval(args.regs)[0]     # lambda = 1e-5
 
         """
@@ -79,7 +79,10 @@ class CDD(nn.Module):
         })
         weight_dict2 = nn.ParameterDict()
 
-        layers = [self.emb_size] + self.layers  # layers = [64,64,64,64,64,64,64,64]
+        # layers = [self.emb_size] + self.layers  # layers = [64,64,64,64,64,64,64,64]
+        feature_dim = self.feature.shape[1]   # 44
+        input_dim   = self.emb_size + feature_dim  # 64 + 44 = 108
+        layers      = [input_dim] + self.layers
         for k in range(len(self.layers)): # k = 0,1,2,3,4,5,6 update new key-item pairs
             # nn.Parameter() is trainable
             weight_dict2.update({'W_gc_%d'%k: nn.Parameter(initializer(torch.empty(layers[k],
@@ -145,30 +148,6 @@ class CDD(nn.Module):
     Need to be changed by a 4-layer NN
     '''
     def rating(self, u_g_embeddings, pos_i_g_embeddings): 
-        # device = u_g_embeddings.device
-        # u_batch_size = u_g_embeddings.size(0)
-        # i_batch_size = pos_i_g_embeddings.size(0)
-        # # Perform matrix multiplication
-        # interactions = torch.matmul(u_g_embeddings, pos_i_g_embeddings.t())
-
-        # # Initialize rating function network
-        # rating_net = RatingNetwork(u_batch_size, i_batch_size).to(device)
-
-        # # Flatten the interactions matrix to feed each value to the neural network
-        # interactions_flat = interactions.view(-1)
-        # interactions_flat = torch.tensor(interactions_flat)
-
-        # # Feed each value in the interactions matrix to the neural network
-        # # ratings = []
-        # # for val in interactions_flat:
-        # #     val_tensor = torch.tensor([[val]])  # Create a tensor of shape (1, 1) for each value
-        # rating = rating_net(interactions_flat)
-        # # ratings.append(rating.item())  # Append the rating value to the list
-
-        # # Reshape the ratings list to match the shape of the interactions matrix
-        # ratings = torch.tensor(rating).view(u_batch_size, i_batch_size)
-
-        # return ratings
         return torch.matmul(u_g_embeddings, pos_i_g_embeddings.t())
 
     # need to be changed
@@ -190,30 +169,6 @@ class CDD(nn.Module):
         ego_embeddings = torch.cat([ego_embeddings, temp_embeddings], dim = 1) # 63191*108
 
         all_embeddings = [ego_embeddings]   # E
-        # print(self.weight_dict['w1'].shape) # torch.Size([1])
-        # for layer in range(len(self.layers)):   # len(self.layers) = 3
-        #     # temp_emb = []
-
-        #     # for i in range(len(self.adj_matrices)): # len(self.adj_matrices) = 5
-        #         # print(self.adj_matrices[i].shape)   # 63191*2000
-        #         # temp_emb.append(torch.sparse.mm(self.adj_matrices[i], all_embeddings[-1]))  # 63191*108
-        #     # temp_emb = [torch.sparse.mm(adj_matrix, all_embeddings[-1]) for adj_matrix in self.adj_matrices]
-        #     adj1 = torch.sparse.mm(self.adj_matrices[0], ego_embeddings) * self.weight_dict['w1']
-        #     adj2 = torch.sparse.mm(self.adj_matrices[1], ego_embeddings) * self.weight_dict['w2']
-        #     adj3 = torch.sparse.mm(self.adj_matrices[2], ego_embeddings) * self.weight_dict['w3']
-        #     # adj4 = torch.sparse.mm(self.adj_matrices[3], ego_embeddings) * self.weight_dict['w4']
-        #     # adj5 = torch.sparse.mm(self.adj_matrices[4], ego_embeddings) * self.weight_dict['w5']
-
-        #     # Sum the new embeddings
-        #     ego_embeddings = adj1 + adj2 + adj3 #+ adj4 + adj5
-
-        #     # new_embeddings = sum([self.weight_dict[f'w{i+1}'] * temp_emb[i] for i in range(len(temp_emb))])
-        #     # new_embeddings = sum(self.weight_dict[f'w{i+1}'] * emb for i, emb in enumerate(temp_emb))
-        #     # print(new_embeddings.shape) torch.Size([63191, 108])
-        #     # new_embeddings = F.leaky_relu(torch.matmul(new_embeddings, self.weight_dict[f'w{layer+1}']))
-        #     ego_embeddings = nn.LeakyReLU(negative_slope=0.2)(adj1 + adj2 + adj3)
-        #     norm_embeddings = F.normalize(ego_embeddings, p=2, dim=1)
-        #     all_embeddings += [norm_embeddings]
 
         for k in range(len(self.layers)): # k = 0,1,2
             # embeddings of neighboring nodes
@@ -223,6 +178,7 @@ class CDD(nn.Module):
             adj3 = torch.sparse.mm(self.adj_matrices[2], ego_embeddings) * self.weight_dict1['w3']
             # side_embeddings = torch.sparse.mm(A_hat, ego_embeddings)   # A_hat * ego_embeddings
             side_embeddings = adj1 + adj2 + adj3
+            # print(side_embeddings.shape)  # torch.Size([63191, 108])
             # sum of transformed messages of neighbors
             # (L+I)*E*W_1 + b_1
             sum_embeddings = torch.matmul(side_embeddings, self.weight_dict2['W_gc_%d' % k]) \
@@ -263,57 +219,3 @@ class CDD(nn.Module):
         neg_i_g_embeddings = i_g_embeddings[neg_items, :]
 
         return u_g_embeddings, pos_i_g_embeddings, neg_i_g_embeddings
-
-# class MultiLayerPerceptron(nn.Module):
-
-#     def __init__(self, input_dim, embed_dims, dropout, output_layer=True, output_dim=1):
-#         super().__init__()
-#         layers = list()
-#         for embed_dim in embed_dims:
-#             layers.append(nn.Dropout(p=dropout))
-#             layers.append(nn.Linear(input_dim, embed_dim))
-#             layers.append(nn.ReLU())
-#             input_dim = embed_dim
-
-#         if output_layer:
-#             layers.append(nn.Linear(input_dim, output_dim))
-
-#         self.mlp = nn.Sequential(*layers)
-
-
-#     def forward(self, x):
-#         """
-#         :param x: Float tensor of size ``(batch_size, embed_dim)``
-#         """
-#         return self.mlp(x.float())
-
-# class RatingNetwork(nn.Module):
-#     def __init__(self, u_batch_size, i_batch_size):
-#         super(RatingNetwork, self).__init__()
-#         self.u_batch_size = u_batch_size
-#         self.i_batch_size = i_batch_size
-#         self.fc1 = nn.Linear(u_batch_size * i_batch_size, 20).cuda()
-#         self.fc2 = nn.Linear(20, 20).cuda()
-#         self.fc3 = nn.Linear(20, u_batch_size * i_batch_size).cuda()
-
-#     def forward(self, x):
-#         x = torch.sigmoid(self.fc1(x))
-#         x = torch.sigmoid(self.fc2(x))
-#         x = torch.sigmoid(self.fc3(x))
-#         return x
-
-# class RatingNetwork(nn.Module):
-#     def __init__(self, u_batch_size, i_batch_size):
-#         super(RatingNetwork, self).__init__()
-#         self.u_batch_size = u_batch_size
-#         self.i_batch_size = i_batch_size
-#         self.fc1 = nn.Linear(u_batch_size * i_batch_size, 20).cuda()
-#         self.fc2 = nn.Linear(20, 20).cuda()
-#         self.fc3 = nn.Linear(20, u_batch_size * i_batch_size).cuda()
-#         self.relu = nn.LeakyReLU(negative_slope=0.01)
-
-#     def forward(self, x):
-#         x = self.relu(self.fc1(x))
-#         x = self.relu(self.fc2(x))
-#         x = self.fc3(x)
-#         return x
