@@ -24,8 +24,6 @@ if __name__ == '__main__':
     plain_adj, norm_adj, mean_adj = data_generator.get_adj_mat()
     feature_matrix = sp.load_npz('../Data/mimicIV/feature.npz')
 
-    # shortest_path_file = sp.load_npz('../Data/mimicIV/shortest_path_grapg.npz')
-
     args.node_dropout = eval(args.node_dropout) # [0.1]
     args.mess_dropout = eval(args.mess_dropout) # [0.1,0.1,0.1]
     print(args.device)  # cuda:0
@@ -33,7 +31,6 @@ if __name__ == '__main__':
     model = CDD(data_generator.n_users,
                  data_generator.n_items,
                  norm_adj,
-                #  shortest_path_file,
                  feature_matrix,
                  args)
     model.to(args.device)
@@ -46,16 +43,18 @@ if __name__ == '__main__':
     cur_best_pre_0, stopping_step = 0, 0
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
-    loss_loger, pre_loger, rec_loger, ndcg_loger, hit_loger, auc_loger, acc_loger = [], [], [], [], [], [], []
+    loss_loger, pre_loger, rec_loger, ndcg_loger, hit_loger, auc_loger = [], [], [], [], [], []
     ls = []
-
-    # if os.path.exists(args.weights_path + str(0) + '.pkl'):
-    #     checkpoint = torch.load(args.weights_path + str(0) + '.pkl')
-    #     model.load_state_dict(checkpoint['model'])
-    #     optimizer.load_state_dict(checkpoint['optimizer'])
-    #     start_epoch = checkpoint['epoch']
-    # else:
-    start_epoch = 0
+    
+    # load checkpoint if any
+    checkpoint_path = os.path.join(args.weights_path, '499.pkl')
+    if os.path.exists(checkpoint_path):
+        checkpoint = torch.load(checkpoint_path, map_location=args.device)
+        model.load_state_dict(checkpoint['model'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        start_epoch = checkpoint['epoch']
+    else:
+        start_epoch = 0
 
     # training process
     for epoch in range(start_epoch, args.epoch):
@@ -112,11 +111,10 @@ if __name__ == '__main__':
         auc_loger.append(ret['auc'])
 
         if args.verbose > 0:
-            perf_str = 'Epoch %d [%.1fs + %.1fs]: training loss=[%.5f=%.5f + %.5f], recall=[%.5f, %.5f], ' \
-                       'precision=[%.5f, %.5f], hit=[%.5f, %.5f], ndcg=[%.5f, %.5f], auc=[%.5f]' % \
-                       (epoch+1, t2 - t1, t3 - t2, loss, mf_loss, emb_loss, ret['recall'][0], ret['recall'][-1],
-                        ret['precision'][0], ret['precision'][-1], ret['hit_ratio'][0], ret['hit_ratio'][-1],
-                        ret['ndcg'][0], ret['ndcg'][-1], ret['auc'])
+            perf_str = 'Epoch %d [%.1fs + %.1fs]: training loss=[%.5f=%.5f + %.5f], recall=%.5f, ' \
+                       'precision=%.5f, hit=%.5f, ndcg=%.5f, auc=%.5f' % \
+                       (epoch+1, t2 - t1, t3 - t2, loss, mf_loss, emb_loss, ret['recall'][0],
+                        ret['precision'][0], ret['hit_ratio'][0], ret['ndcg'][0], ret['auc'])
             print(perf_str)
 
         cur_best_pre_0, stopping_step, should_stop = early_stopping(ret['recall'][0], cur_best_pre_0,
@@ -130,7 +128,7 @@ if __name__ == '__main__':
         # *********************************************************
         # save the user & item embeddings for pretraining.
         if ret['recall'][0] == cur_best_pre_0 and args.save_flag == 1:
-            torch.save(model.state_dict(), args.weights_path + str(epoch) + '.pkl') # save model parameters
+            torch.save({'model': model.state_dict(), 'optimizer': optimizer.state_dict(),'epoch': epoch}, args.weights_path + str(epoch) + '.pkl') # save model parameters
             print('save the weights in path: ', args.weights_path + str(epoch) + '.pkl')
     
     recs = np.array(rec_loger)
