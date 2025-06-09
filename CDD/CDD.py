@@ -209,7 +209,7 @@ class CDD(nn.Module):
         all_embeddings = torch.cat(all_embeddings, 1)
         u_g_embeddings = all_embeddings[:self.n_user, :]
         i_g_embeddings = all_embeddings[self.n_user:, :]
-
+        self.final_item_embeddings = all_embeddings[self.n_user:, :].detach()
         """
         *********************************************************
         look up.
