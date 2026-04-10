@@ -1,5 +1,5 @@
 # Collaborative-Disease-Detection
-This is the repo for paper "Collaborative Disease Detection"
+This is the repo for paper "Medical Test-free Disease Detection Based on Big Data"
 
 ## Set up
 First create an empty conda environment with Python 3 (reference version: Python 3.10.18) and `pip install` the `requirements.txt` file in this directory.
