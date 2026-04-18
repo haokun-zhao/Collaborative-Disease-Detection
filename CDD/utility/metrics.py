@@ -48,7 +48,7 @@ def dcg_at_k(r, k, method=1):
     Returns:
         Discounted cumulative gain
     """
-    r = np.asfarray(r)[:k]
+    r = np.asarray(r)[:k]
     if r.size:
         if method == 0:
             return r[0] + np.sum(r[1:] / np.log2(np.arange(2, r.size + 1)))
@@ -82,7 +82,7 @@ def ndcg_at_k(r, k, ground_truth, method=1):
 def recall_at_k(r, k, all_pos_num):
     # if all_pos_num == 0:
     #     return 0
-    r = np.asfarray(r)[:k]
+    r = np.asarray(r)[:k]
     return np.sum(r) / all_pos_num
 
 
@@ -98,6 +98,17 @@ def F1(pre, rec):
         return (2.0 * pre * rec) / (pre + rec)
     else:
         return 0.
+
+def mrr_at_k(r, k):
+    """Mean Reciprocal Rank @ k.
+    Returns 1/rank of the first relevant item in the top-k list, or 0 if none.
+    """
+    r = np.asarray(r)[:k]
+    for i, rel in enumerate(r):
+        if rel:
+            return 1.0 / (i + 1)
+    return 0.
+
 
 def AUC(ground_truth, prediction):
     try:

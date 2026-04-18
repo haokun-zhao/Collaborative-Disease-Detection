@@ -9,7 +9,7 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run NGCF.")
-    parser.add_argument('--weights_path', nargs='?', default='model/',
+    parser.add_argument('--weights_path', nargs='?', default='model_ablation/',
                         help='Store model path.')
     parser.add_argument('--data_path', nargs='?', default='../Data/',
                         help='Input data path.')
@@ -22,7 +22,7 @@ def parse_args():
                         help='0: No pretrain, -1: Pretrain with the learned embeddings, 1:Pretrain with stored models.')
     parser.add_argument('--verbose', type=int, default=1,
                         help='Interval of evaluation.')
-    parser.add_argument('--epoch', type=int, default=100,
+    parser.add_argument('--epoch', type=int, default=500,
                         help='Number of epoch.')
 
     parser.add_argument('--embed_size', type=int, default=64,
@@ -51,10 +51,10 @@ def parse_args():
     parser.add_argument('--mess_dropout', nargs='?', default='[0.1,0.1,0.1]',
                         help='Keep probability w.r.t. message dropout (i.e., 1-dropout_ratio) for each deep layer. 1: no dropout.')
 
-    parser.add_argument('--Ks', nargs='?', default='[20, 40, 60, 80, 100]',
+    parser.add_argument('--Ks', nargs='?', default='[3, 5, 10, 20]',
                         help='Output sizes of every layer')
 
-    parser.add_argument('--save_flag', type=int, default=0,
+    parser.add_argument('--save_flag', type=int, default=1,
                         help='0: Disable model saver, 1: Activate model saver')
 
     parser.add_argument('--test_flag', nargs='?', default='part',
@@ -62,4 +62,22 @@ def parse_args():
 
     parser.add_argument('--report', type=int, default=1,
                         help='0: Disable performance report w.r.t. sparsity levels, 1: Show performance report w.r.t. sparsity levels')
+                        
+    parser.add_argument('--seed', type=int, default=42,
+                        help='Random seed for reproducibility.')
+    parser.add_argument('--use_demographics', type=int, default=1,
+                        help='1: use patient demographic features, 0: remove them (zero user feature block).')
+    parser.add_argument('--max_hop', type=int, default=3,
+                        help='Maximum propagation hop K for multi-hop aggregation.')
+    parser.add_argument('--hop_mixing', nargs='?', default='adaptive',
+                        choices=['adaptive', 'uniform'],
+                        help='adaptive: learn hop weights; uniform: equal weights across hops.')
+    parser.add_argument('--aggregator_mode', nargs='?', default='sum_bi',
+                        choices=['sum_bi', 'sum', 'bi'],
+                        help='Message aggregator variant.')
+    parser.add_argument('--inter_layer_agg', nargs='?', default='concat',
+                        choices=['concat', 'mean', 'last'],
+                        help='How to aggregate embeddings across layers.')
+    # parser.add_argument('--patient_feature_path', nargs='?', default='../Data/mimicIV/patient_fix_features.csv',
+    #                     help='Patient features file path.')
     return parser.parse_args()

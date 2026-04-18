@@ -68,9 +68,10 @@ class Data(object):
 
                 for l in f_test.readlines():
                     if len(l) == 0: break
-                    l = l.strip('\n')
+                    l = l.strip('\n').strip()
+                    if len(l) == 0: continue
                     try:
-                        items = [int(i) for i in l.split(' ')]
+                        items = [int(float(i)) for i in l.split() if i.strip()]
                     except Exception:
                         continue
 
@@ -87,9 +88,9 @@ class Data(object):
 
         except Exception:
             adj_mat, norm_adj_mat, mean_adj_mat = self.create_adj_mat()
-            sp.save_npz(self.path + '/s_adj_mat.npz', adj_mat)
-            sp.save_npz(self.path + '/s_norm_adj_mat.npz', norm_adj_mat)
-            sp.save_npz(self.path + '/s_mean_adj_mat.npz', mean_adj_mat)
+            sp.save_npz(self.path + '/s_adj_mat2.npz', adj_mat)
+            sp.save_npz(self.path + '/s_norm_adj_mat2.npz', norm_adj_mat)
+            sp.save_npz(self.path + '/s_mean_adj_mat2.npz', mean_adj_mat)
         return adj_mat, norm_adj_mat, mean_adj_mat
 
     def create_adj_mat(self):
