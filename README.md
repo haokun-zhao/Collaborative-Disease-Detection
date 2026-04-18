@@ -2,7 +2,7 @@
 
 Repository for **Medical Test-free Disease Detection Based on Big Data**. The main model **CLDD (Collaborative Learning for Disease Detection)** is implemented in `CDD/CDD.py` as a PyTorch `nn.Module` and trained from `CDD/main.py`.
 
-## Model overview (CDD / CLDD)
+## Model overview (CLDD)
 
 - **Graph**: Bipartite user–disease graph with a normalized sparse adjacency (`s_norm_adj_mat2.npz`). Message passing runs for several layers with **multi-order neighbors** (learnable weights over powers \(A^1,\ldots,A^K\), default \(K=3\)).
 - **Inputs**: Learnable user and item embeddings; item side concatenates an **ICD-derived feature block** with patient **demographic / fixed features** (`feature.npz`). Demographics can be disabled with `--use_demographics 0`.
@@ -15,8 +15,8 @@ Repository for **Medical Test-free Disease Detection Based on Big Data**. The ma
 Create a conda environment (reference: Python 3.10) and install dependencies from the repo root:
 
 ```sh
-conda create -n cdd python=3.10
-conda activate cdd
+conda create -n cldd python=3.10
+conda activate cldd
 pip install -r requirements.txt
 ```
 
