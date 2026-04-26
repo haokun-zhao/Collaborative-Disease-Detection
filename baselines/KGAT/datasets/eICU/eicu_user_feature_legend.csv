@@ -1,0 +1,22 @@
+feature_index,group,value
+0,age,<=20
+1,age,21-30
+2,age,31-40
+3,age,41-50
+4,age,51-60
+5,age,61-70
+6,age,71-80
+7,age,81-89
+8,age,>=90_or_unknown
+9,gender,(empty)
+10,gender,Female
+11,gender,Male
+12,gender,Other
+13,gender,Unknown
+14,ethnicity,(empty)
+15,ethnicity,African American
+16,ethnicity,Asian
+17,ethnicity,Caucasian
+18,ethnicity,Hispanic
+19,ethnicity,Native American
+20,ethnicity,Other/Unknown
