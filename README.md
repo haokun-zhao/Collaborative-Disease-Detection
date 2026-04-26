@@ -76,6 +76,10 @@ Fig. 1 illustrates high-order connectivity:
 
 <img src="./Figure/high order connectivity.png" width="100%"></img>
 
-Table 1: performance comparison on MIMIC-IV:
+Model Architecture:
 
-<img src="./Figure/performance comparison.png" width="100%"></img>
+<img src="./Figure/model.png" width="100%"></img>
+
+Table 3: performance comparison on MIMIC-IV and eICU:
+
+<img src="./Figure/result.png" width="100%"></img>
