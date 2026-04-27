@@ -52,9 +52,20 @@ python main.py --dataset mimicIV --gpu_id 0 --epoch 500 --lr 0.0001 \
   --weights_path model/ --save_flag 1
 ```
 
-- **Checkpoints**: Best weights are saved under `--weights_path` when validation recall improves (`<epoch>.pkl`). If `model_ablation/259.pkl` exists, training resumes from that checkpoint (see `main.py`).
-- **Efficiency log**: After training, `efficiency.tsv` is written under the weights directory (epoch time, convergence time, peak RAM/GPU, throughput).
-- **Detailed test report**: By default the run generates `disease_prediction_result4.txt` and `high_accuracy_patients4.csv` in `CDD/`. Set `CDD_SKIP_DETAILED_REPORT=1` to skip this step.
+- **Checkpoints**: Best weights are saved under `--weights_path` when validation Recall@3 improves (`<epoch>.pkl`). If `<weights_path>/259.pkl` exists at startup, training resumes from that checkpoint.
+- **Evaluation cadence**: Metrics are computed every 10 epochs. Early stopping triggers after 5 consecutive evaluations without improvement.
+- **Efficiency log**: After training, `efficiency.tsv` is written under the weights directory (avg epoch time, convergence time, peak RAM/GPU, throughput).
+- **Detailed test report**: By default the run generates `disease_prediction_result4.txt` and `high_accuracy_patients4.csv` in the working directory (`CDD/`). Set `CDD_SKIP_DETAILED_REPORT=1` to skip this step.
+
+## Fairness evaluation
+
+From the **`CDD`** directory, pointing at a trained checkpoint:
+
+```sh
+python fairness_eval.py [--weights_path model/] [--checkpoint <epoch>.pkl]
+```
+
+Evaluates Precision, Recall, NDCG, MRR, and Hit@K (K=[5,10,15,20]) stratified by demographic subgroups (age group, sex, race). Reports `max_gap` (max − min across subgroups) and disparate-impact ratio (min/max) per demographic axis. Requires `patient_fix_features.csv` in the dataset directory.
 
 ## Influence attribution (Integrated Gradients)
 
@@ -68,7 +79,16 @@ Optional: `--patient-a <id>`, `--aggregate-sample N`, `--ig-steps 50`, `--ig-bas
 
 ## Other scripts
 
-Under `scripts/` you will find helpers such as dataset building (`build_eicu_dataset.py`), ablations and scaling (`run_cdd_ablation.py`, `run_cdd_mimic_scaling.py`), diagnostics/plots, and KGAT-related runners. Use `--help` on each script for usage.
+All scripts below accept `--help` for full usage. Run from the **repository root** unless noted.
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/build_eicu_dataset.py` | Construct eICU dataset from patient/diagnosis CSVs (`--num-items`, `--test-ratio`, `--seed`) |
+| `scripts/run_cdd_ablation.py` | Systematic ablation over hop mixing, layer sizes, aggregator modes, etc. |
+| `scripts/run_cdd_mimic_scaling.py` | Scaling benchmarks on nested MIMIC-IV dataset subsets |
+| `scripts/granular_diagnostics.py` | Per-user-group performance breakdown and diagnostic plots |
+| `CDD/visualize_tsne.py` | t-SNE visualization of disease (item) embeddings; run from `CDD/` |
+| `CDD/visualize_user_tsne.py` | t-SNE visualization of patient (user) embeddings; run from `CDD/` |
 
 ## Figures and results
 
